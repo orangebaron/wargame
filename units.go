@@ -60,6 +60,7 @@ type unit struct {
 	health   uint
 	location vec
 	owner    *player
+	enabled  bool
 }
 
 //DOES A MAP OF VECTORS WORK?????
@@ -71,11 +72,31 @@ var unitmap = make(map[vec]*unit)
 var mostrecentchanges = make(map[vec]time)
 
 func (u *unit) move(v vec) bool {
-	if unitmap[v] == nil {
+	if unitmap[v] == nil && u.enabled {
 		u.location = v
 		return true
 	}
 	return false
+}
+
+// effectuser applies output and requirement effects to the player's values
+func (u *unit) effectuser(positive bool) {
+	p := u.owner
+	if positive {
+		p.foodO += u.stats.foodO
+		p.metalO += u.stats.metalO
+		p.productionO += u.stats.productionO
+		p.managementO += u.stats.managementO
+		p.peopleR += u.stats.peopleR
+		p.managementR += u.stats.managementR
+	} else {
+		p.foodO -= u.stats.foodO
+		p.metalO -= u.stats.metalO
+		p.productionO -= u.stats.productionO
+		p.managementO -= u.stats.managementO
+		p.peopleR -= u.stats.peopleR
+		p.managementR -= u.stats.managementR
+	}
 }
 func (u *unit) damage(d uint) bool { //return value: whether unit was killed
 	if u.health <= d {
@@ -87,6 +108,9 @@ func (u *unit) damage(d uint) bool { //return value: whether unit was killed
 	return false
 }
 func (u *unit) attack(target *unit) bool {
+	if !u.enabled {
+		return false
+	}
 	return target.damage(u.stats.damage)
 }
 
@@ -96,16 +120,11 @@ func newunit(stats *unittype, location vec, owner *player) *unit {
 		return nil
 	}
 
-	u := unit{stats, stats.maxhealth, location, owner}
+	u := unit{stats, stats.maxhealth, location, owner, true}
 	unitmap[location] = &u
 	owner.ownedunits = append(owner.ownedunits, &u)
 
-	owner.foodO += stats.foodO
-	owner.metalO += stats.metalO
-	owner.productionO += stats.productionO
-	owner.managementO += stats.managementO
-	owner.peopleR += stats.peopleR
-	owner.managementR += stats.managementR
+	u.effectuser(true)
 
 	return &u
 }
