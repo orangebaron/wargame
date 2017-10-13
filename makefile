@@ -4,4 +4,3 @@ build: get-dependencies
 	go build
 run: build
 	./wargame
- 
