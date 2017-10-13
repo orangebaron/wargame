@@ -1,23 +1,24 @@
 package main
 
-// unittype contains data for a type of unit or tile.
+// unittype contains data for a type of unit.
+// a unit can be a boat or a tile.
 type unittype struct {
-	name        string
-	foodO       uint
-	metalO      uint
-	productionO uint
-	managementO uint
-	peopleR     uint
-	managementR uint
-	metalC      uint
-	productionC uint
-	maxhealth   uint
-	speed       uint
-	hitrange    uint
-	damage      uint
+	name               string
+	foodoutput         uint
+	metaloutput        uint
+	productionoutput   uint
+	managementoutput   uint
+	peoplerequired     uint
+	managementrequired uint
+	metalcost          uint
+	productioncost     uint
+	maxhealth          uint
+	speed              uint
+	hitrange           uint
+	damage             uint
 }
 
-// types is a list of all possible types.
+// types is a list of all possible unit types.
 var types = [14]unittype{
 	unittype{"Farm", 75, 0, 0, 0, 5, 1, 1, 20, 3, 0, 0, 0},
 	unittype{"Urban Farm", 200, 0, 0, 0, 10, 3, 5, 50, 1, 0, 0, 0},
@@ -63,8 +64,6 @@ type unit struct {
 	enabled  bool
 }
 
-//DOES A MAP OF VECTORS WORK?????
-
 // unitmap is a map of a location on the board to the unit in that location.
 var unitmap = make(map[vec]*unit)
 
@@ -83,19 +82,19 @@ func (u *unit) move(v vec) bool {
 func (u *unit) effectuser(positive bool) {
 	p := u.owner
 	if positive {
-		p.foodO += u.stats.foodO
-		p.metalO += u.stats.metalO
-		p.productionO += u.stats.productionO
-		p.managementO += u.stats.managementO
-		p.peopleR += u.stats.peopleR
-		p.managementR += u.stats.managementR
+		p.foodoutput += u.stats.foodoutput
+		p.metaloutput += u.stats.metaloutput
+		p.productionoutput += u.stats.productionoutput
+		p.managementoutput += u.stats.managementoutput
+		p.peoplerequired += u.stats.peoplerequired
+		p.managementrequired += u.stats.managementrequired
 	} else {
-		p.foodO -= u.stats.foodO
-		p.metalO -= u.stats.metalO
-		p.productionO -= u.stats.productionO
-		p.managementO -= u.stats.managementO
-		p.peopleR -= u.stats.peopleR
-		p.managementR -= u.stats.managementR
+		p.foodoutput -= u.stats.foodoutput
+		p.metaloutput -= u.stats.metaloutput
+		p.productionoutput -= u.stats.productionoutput
+		p.managementoutput -= u.stats.managementoutput
+		p.peoplerequired -= u.stats.peoplerequired
+		p.managementrequired -= u.stats.managementrequired
 	}
 }
 func (u *unit) damage(d uint) bool { //return value: whether unit was killed

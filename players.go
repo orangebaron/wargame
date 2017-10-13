@@ -4,13 +4,13 @@ package main
 type player struct {
 	ownedunits               []*unit
 	unitslost                []*unit //units lost since last turn
-	foodO                    uint
-	metalO                   uint
-	productionO              uint
-	managementO              uint
+	foodoutput               uint
+	metaloutput              uint
+	productionoutput         uint
+	managementoutput         uint
 	people                   uint
-	peopleR                  uint
-	managementR              uint
+	peoplerequired           uint
+	managementrequired       uint
 	buildqueue               []*unittype
 	buildmetalremaining      uint
 	buildproductionremaining uint
@@ -38,30 +38,30 @@ func (p *player) turn() {
 
 	// change population
 	const growthrate = 10
-	if p.foodO > p.people {
-		p.people += 1 + ((p.foodO - p.people) / 10)
+	if p.foodoutput > p.people {
+		p.people += 1 + ((p.foodoutput - p.people) / 10)
 	} else {
-		p.people -= 1 + ((p.people - p.foodO) / 10)
+		p.people -= 1 + ((p.people - p.foodoutput) / 10)
 	}
 
 	// check if people and management requirements are met or if any closed buildings can be opened
-	if p.managementR < p.managementO {
+	if p.managementrequired < p.managementoutput {
 		// find the unit that requires the most management (and isn't closed) and close it
 		var maxmanagement uint
 		var maxunit *unit
 		for _, u := range p.ownedunits {
-			if u.enabled && u.stats.managementR > maxmanagement {
+			if u.enabled && u.stats.managementrequired > maxmanagement {
 				maxunit = u
 			}
 		}
 		maxunit.effectuser(false)
 		maxunit.enabled = false
-	} else if p.peopleR < p.people {
+	} else if p.peoplerequired < p.people {
 		// find the unit that requires the most people (and isn't closed) and close it
 		var maxpeople uint
 		var maxunit *unit
 		for _, u := range p.ownedunits {
-			if u.enabled && u.stats.peopleR > maxpeople {
+			if u.enabled && u.stats.peoplerequired > maxpeople {
 				maxunit = u
 			}
 		}
@@ -70,7 +70,7 @@ func (p *player) turn() {
 	} else {
 		// reactivate units
 		for _, u := range p.ownedunits {
-			if !u.enabled && u.stats.managementR+p.managementR < p.managementO && u.stats.peopleR+p.peopleR < p.people {
+			if !u.enabled && u.stats.managementrequired+p.managementrequired < p.managementoutput && u.stats.peoplerequired+p.peoplerequired < p.people {
 				u.enabled = true
 				u.effectuser(true)
 			}
@@ -80,17 +80,17 @@ func (p *player) turn() {
 	// change what's being built
 	if len(p.buildqueue) > 0 {
 		if p.buildmetalremaining > 0 {
-			p.buildmetalremaining -= p.metalO
-		} else if p.buildproductionremaining > p.productionO {
-			p.buildproductionremaining -= p.productionO
+			p.buildmetalremaining -= p.metaloutput
+		} else if p.buildproductionremaining > p.productionoutput {
+			p.buildproductionremaining -= p.productionoutput
 		} else {
 			// build finished
 			p.buildproductionremaining = 0
 			p.unitsfinished = append(p.unitsfinished, p.buildqueue[0])
 			p.buildqueue = p.buildqueue[1:]
 			if len(p.buildqueue) > 0 {
-				p.buildmetalremaining = p.buildqueue[0].metalC
-				p.buildproductionremaining = p.buildqueue[0].productionC
+				p.buildmetalremaining = p.buildqueue[0].metalcost
+				p.buildproductionremaining = p.buildqueue[0].productioncost
 			}
 		}
 	}
