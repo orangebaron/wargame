@@ -9,8 +9,7 @@ type player struct {
 	metaloutput              uint
 	productionoutput         uint
 	managementoutput         uint
-	people                   uint
-	peoplerequired           uint
+	foodrequired             uint
 	managementrequired       uint
 	buildqueue               []*unittype
 	buildmetalremaining      uint
@@ -18,9 +17,9 @@ type player struct {
 	unitsfinished            []*unittype
 }
 
-// turn is fired every turn.
-func (p *player) turn() {
-	// change resources outputs and required resources
+// processunitslost processes the unistlost list,
+// adjusting "output" and "required" variables.
+func (p *player) processunitslost() {
 	for _, u := range p.unitslost {
 		if u.enabled {
 			u.effectuser(false)
@@ -36,16 +35,12 @@ func (p *player) turn() {
 		}
 	}
 	p.unitslost = make([]*unit, 0)
+}
 
-	// change population
-	const growthrate = 10
-	if p.foodoutput > p.people {
-		p.people += 1 + ((p.foodoutput - p.people) / 10)
-	} else {
-		p.people -= 1 + ((p.people - p.foodoutput) / 10)
-	}
-
-	// check if people and management requirements are met or if any closed buildings can be opened
+// updateactivations checks if the food and management requirements are less
+// than supplied. if so, it deactivates buildings. if the food and management
+// requirements are greater than supplied, it reactivates buildings.
+func (p *player) updateactivations() {
 	if p.managementrequired < p.managementoutput {
 		// find the unit that requires the most management (and isn't closed) and close it
 		var maxmanagement uint
@@ -57,12 +52,12 @@ func (p *player) turn() {
 		}
 		maxunit.effectuser(false)
 		maxunit.enabled = false
-	} else if p.peoplerequired < p.people {
-		// find the unit that requires the most people (and isn't closed) and close it
-		var maxpeople uint
+	} else if p.foodrequired < p.foodoutput {
+		// find the unit that requires the most food (and isn't closed) and close it
+		var maxfood uint
 		var maxunit *unit
 		for _, u := range p.ownedunits {
-			if u.enabled && u.stats.peoplerequired > maxpeople {
+			if u.enabled && u.stats.foodrequired > maxfood {
 				maxunit = u
 			}
 		}
@@ -71,14 +66,18 @@ func (p *player) turn() {
 	} else {
 		// reactivate units
 		for _, u := range p.ownedunits {
-			if !u.enabled && u.stats.managementrequired+p.managementrequired < p.managementoutput && u.stats.peoplerequired+p.peoplerequired < p.people {
+			if !u.enabled && u.stats.managementrequired+p.managementrequired < p.managementoutput &&
+				u.stats.foodrequired+p.foodrequired < p.foodoutput {
 				u.enabled = true
 				u.effectuser(true)
 			}
 		}
 	}
+}
 
-	// change what's being built
+// updatebuilds updates the progress of a unit being built, and updates the
+// build queue when applicable.
+func (p *player) updatebuilds() {
 	if len(p.buildqueue) > 0 {
 		if p.buildmetalremaining > 0 {
 			p.buildmetalremaining -= p.metaloutput
@@ -95,6 +94,13 @@ func (p *player) turn() {
 			}
 		}
 	}
+}
+
+// turn is fired every turn.
+func (p *player) turn() {
+	p.processunitslost()
+	p.updateactivations()
+	p.updatebuilds()
 }
 
 // placeunit places a unit from a player's finished units list.

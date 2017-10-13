@@ -8,7 +8,7 @@ type unittype struct {
 	metaloutput        uint
 	productionoutput   uint
 	managementoutput   uint
-	peoplerequired     uint
+	foodrequired       uint
 	managementrequired uint
 	metalcost          uint
 	productioncost     uint
@@ -86,14 +86,14 @@ func (u *unit) effectuser(positive bool) {
 		p.metaloutput += u.stats.metaloutput
 		p.productionoutput += u.stats.productionoutput
 		p.managementoutput += u.stats.managementoutput
-		p.peoplerequired += u.stats.peoplerequired
+		p.foodrequired += u.stats.foodrequired
 		p.managementrequired += u.stats.managementrequired
 	} else {
 		p.foodoutput -= u.stats.foodoutput
 		p.metaloutput -= u.stats.metaloutput
 		p.productionoutput -= u.stats.productionoutput
 		p.managementoutput -= u.stats.managementoutput
-		p.peoplerequired -= u.stats.peoplerequired
+		p.foodrequired -= u.stats.foodrequired
 		p.managementrequired -= u.stats.managementrequired
 	}
 }
