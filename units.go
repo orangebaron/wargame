@@ -62,7 +62,7 @@ type unit struct {
 	location vec
 	owner    *player
 	enabled  bool
-	game     *gamedata
+	game     *Game
 }
 
 func (u *unit) move(v vec) bool {
@@ -109,7 +109,7 @@ func (u *unit) attack(target *unit) bool {
 }
 
 // newunit creates and initializes a new unit with the given specifications.
-func newunit(stats *unittype, location vec, owner *player, game *gamedata) *unit {
+func newunit(stats *unittype, location vec, owner *player, game *Game) *unit {
 	if game.unitmap[location] != nil {
 		return nil
 	}

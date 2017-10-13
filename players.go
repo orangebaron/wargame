@@ -15,7 +15,7 @@ type player struct {
 	buildmetalremaining      uint
 	buildproductionremaining uint
 	unitsfinished            []*unittype
-	game                     *gamedata
+	game                     *Game
 }
 
 // processunitslost processes the unistlost list,
@@ -119,7 +119,7 @@ func (p *player) placeunit(u *unittype, v vec) bool {
 	return false
 }
 
-func makeplayer(name string, game *gamedata) *player {
+func makeplayer(name string, game *Game) *player {
 	plr := player{
 		name,
 		make([]*unit, 0),

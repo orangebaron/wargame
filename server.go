@@ -10,7 +10,7 @@ import (
 )
 
 var upgrader = websocket.Upgrader{} // don't know if I need this
-var game = makegamedata()
+var game = MakeGame()
 
 func sockethandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
