@@ -15,6 +15,7 @@ type player struct {
 	buildmetalremaining      uint
 	buildproductionremaining uint
 	unitsfinished            []*unittype
+	game                     *gamedata
 }
 
 // processunitslost processes the unistlost list,
@@ -25,8 +26,8 @@ func (p *player) processunitslost() {
 			u.effectuser(false)
 		}
 		u.enabled = false
-		unitmap[u.location] = nil
-		mostrecentchanges[u.location] = now()
+		p.game.unitmap[u.location] = nil
+		p.game.mostrecentchanges[u.location] = now()
 		for i, u2 := range p.ownedunits {
 			if u == u2 {
 				p.ownedunits = append(p.ownedunits[:i], p.ownedunits[i+1:]...)
@@ -108,7 +109,7 @@ func (p *player) turn() {
 func (p *player) placeunit(u *unittype, v vec) bool {
 	for i, unit := range p.unitsfinished { // check if user can place that unit
 		if unit == u {
-			if newunit(u, v, p) == nil {
+			if newunit(u, v, p, p.game) == nil {
 				return false
 			}
 			p.unitsfinished = append(p.unitsfinished[:i], p.unitsfinished[i+1:]...)
@@ -116,4 +117,25 @@ func (p *player) placeunit(u *unittype, v vec) bool {
 		}
 	}
 	return false
+}
+
+func makeplayer(name string, game *gamedata) *player {
+	plr := player{
+		name,
+		make([]*unit, 0),
+		make([]*unit, 0),
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		make([]*unittype, 0),
+		0,
+		0,
+		make([]*unittype, 0),
+		game,
+	}
+	game.playerlist = append(game.playerlist, plr)
+	return &plr
 }

@@ -62,16 +62,11 @@ type unit struct {
 	location vec
 	owner    *player
 	enabled  bool
+	game     *gamedata
 }
 
-// unitmap is a map of a location on the board to the unit in that location.
-var unitmap = make(map[vec]*unit)
-
-// mostrecentchanges list the most recent time a spot has been changed.
-var mostrecentchanges = make(map[vec]time)
-
 func (u *unit) move(v vec) bool {
-	if unitmap[v] == nil && u.enabled {
+	if u.game.unitmap[v] == nil && u.enabled {
 		u.location = v
 		return true
 	}
@@ -114,13 +109,13 @@ func (u *unit) attack(target *unit) bool {
 }
 
 // newunit creates and initializes a new unit with the given specifications.
-func newunit(stats *unittype, location vec, owner *player) *unit {
-	if unitmap[location] != nil {
+func newunit(stats *unittype, location vec, owner *player, game *gamedata) *unit {
+	if game.unitmap[location] != nil {
 		return nil
 	}
 
-	u := unit{stats, stats.maxhealth, location, owner, true}
-	unitmap[location] = &u
+	u := unit{stats, stats.maxhealth, location, owner, true, game}
+	game.unitmap[location] = &u
 	owner.ownedunits = append(owner.ownedunits, &u)
 
 	u.effectuser(true)
