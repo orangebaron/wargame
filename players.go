@@ -2,6 +2,7 @@ package main
 
 // player represents a player in the game.
 type player struct {
+	name                     string
 	ownedunits               []*unit
 	unitslost                []*unit //units lost since last turn
 	foodoutput               uint
