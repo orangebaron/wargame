@@ -1,141 +1,142 @@
 package main
 
-// player represents a player in the game.
-type player struct {
-	name                     string
-	ownedunits               []*unit
-	unitslost                []*unit //units lost since last turn
-	foodoutput               uint
-	metaloutput              uint
-	productionoutput         uint
-	managementoutput         uint
-	foodrequired             uint
-	managementrequired       uint
-	buildqueue               []*unittype
-	buildmetalremaining      uint
-	buildproductionremaining uint
-	unitsfinished            []*unittype
-	game                     *Game
+// Player represents a player in the game.
+type Player struct {
+	Name                     string
+	OwnedUnits               []*Unit
+	UnitsLost                []*Unit //units lost since last turn
+	FoodOutput               uint
+	MetalOutput              uint
+	ProductionOutput         uint
+	ManagementOutput         uint
+	FoodRequired             uint
+	ManagementRequired       uint
+	BuildQueue               []*UnitType
+	BuildMetalRemaining      uint
+	BuildProductionRemaining uint
+	UnitsFinished            []*UnitType
+	GameIn                   *Game
 }
 
-// processunitslost processes the unistlost list,
+// ProcessUnitsLost processes the UnistLost list,
 // adjusting "output" and "required" variables.
-func (p *player) processunitslost() {
-	for _, u := range p.unitslost {
-		if u.enabled {
-			u.effectuser(false)
+func (p *Player) ProcessUnitsLost() {
+	for _, u := range p.UnitsLost {
+		if u.Enabled {
+			u.EffectUser(false)
 		}
-		u.enabled = false
-		p.game.unitmap[u.location] = nil
-		p.game.mostrecentchanges[u.location] = now()
-		for i, u2 := range p.ownedunits {
+		u.Enabled = false
+		p.GameIn.UnitMap[u.Location] = nil
+		p.GameIn.MostRecentChanges[u.Location] = p.GameIn.CurrentTurnNum
+		for i, u2 := range p.OwnedUnits {
 			if u == u2 {
-				p.ownedunits = append(p.ownedunits[:i], p.ownedunits[i+1:]...)
+				p.OwnedUnits = append(p.OwnedUnits[:i], p.OwnedUnits[i+1:]...)
 				break
 			}
 		}
 	}
-	p.unitslost = make([]*unit, 0)
+	p.UnitsLost = make([]*Unit, 0)
 }
 
-// updateactivations checks if the food and management requirements are less
+// UpdateActivations checks if the food and management requirements are less
 // than supplied. if so, it deactivates buildings. if the food and management
 // requirements are greater than supplied, it reactivates buildings.
-func (p *player) updateactivations() {
-	if p.managementrequired < p.managementoutput {
+func (p *Player) UpdateActivations() {
+	if p.ManagementRequired < p.ManagementOutput {
 		// find the unit that requires the most management (and isn't closed) and close it
 		var maxmanagement uint
-		var maxunit *unit
-		for _, u := range p.ownedunits {
-			if u.enabled && u.stats.managementrequired > maxmanagement {
+		var maxunit *Unit
+		for _, u := range p.OwnedUnits {
+			if u.Enabled && u.Stats.ManagementRequired > maxmanagement {
 				maxunit = u
 			}
 		}
-		maxunit.effectuser(false)
-		maxunit.enabled = false
-	} else if p.foodrequired < p.foodoutput {
+		maxunit.EffectUser(false)
+		maxunit.Enabled = false
+	} else if p.FoodRequired < p.FoodOutput {
 		// find the unit that requires the most food (and isn't closed) and close it
 		var maxfood uint
-		var maxunit *unit
-		for _, u := range p.ownedunits {
-			if u.enabled && u.stats.foodrequired > maxfood {
+		var maxunit *Unit
+		for _, u := range p.OwnedUnits {
+			if u.Enabled && u.Stats.FoodRequired > maxfood {
 				maxunit = u
 			}
 		}
-		maxunit.effectuser(false)
-		maxunit.enabled = false
+		maxunit.EffectUser(false)
+		maxunit.Enabled = false
 	} else {
 		// reactivate units
-		for _, u := range p.ownedunits {
-			if !u.enabled && u.stats.managementrequired+p.managementrequired < p.managementoutput &&
-				u.stats.foodrequired+p.foodrequired < p.foodoutput {
-				u.enabled = true
-				u.effectuser(true)
+		for _, u := range p.OwnedUnits {
+			if !u.Enabled && u.Stats.ManagementRequired+p.ManagementRequired < p.ManagementOutput &&
+				u.Stats.FoodRequired+p.FoodRequired < p.FoodOutput {
+				u.Enabled = true
+				u.EffectUser(true)
 			}
 		}
 	}
 }
 
-// updatebuilds updates the progress of a unit being built, and updates the
+// UpdateBuilds updates the progress of a unit being built, and updates the
 // build queue when applicable.
-func (p *player) updatebuilds() {
-	if len(p.buildqueue) > 0 {
-		if p.buildmetalremaining > 0 {
-			p.buildmetalremaining -= p.metaloutput
-		} else if p.buildproductionremaining > p.productionoutput {
-			p.buildproductionremaining -= p.productionoutput
+func (p *Player) UpdateBuilds() {
+	if len(p.BuildQueue) > 0 {
+		if p.BuildMetalRemaining > 0 {
+			p.BuildMetalRemaining -= p.MetalOutput
+		} else if p.BuildProductionRemaining > p.ProductionOutput {
+			p.BuildProductionRemaining -= p.ProductionOutput
 		} else {
 			// build finished
-			p.buildproductionremaining = 0
-			p.unitsfinished = append(p.unitsfinished, p.buildqueue[0])
-			p.buildqueue = p.buildqueue[1:]
-			if len(p.buildqueue) > 0 {
-				p.buildmetalremaining = p.buildqueue[0].metalcost
-				p.buildproductionremaining = p.buildqueue[0].productioncost
+			p.BuildProductionRemaining = 0
+			p.UnitsFinished = append(p.UnitsFinished, p.BuildQueue[0])
+			p.BuildQueue = p.BuildQueue[1:]
+			if len(p.BuildQueue) > 0 {
+				p.BuildMetalRemaining = p.BuildQueue[0].MetalCost
+				p.BuildProductionRemaining = p.BuildQueue[0].ProductionCost
 			}
 		}
 	}
 }
 
-// turn is fired every turn.
-func (p *player) turn() {
-	p.processunitslost()
-	p.updateactivations()
-	p.updatebuilds()
+// Turn is fired every turn.
+func (p *Player) Turn() {
+	p.ProcessUnitsLost()
+	p.UpdateActivations()
+	p.UpdateBuilds()
 }
 
 // placeunit places a unit from a player's finished units list.
 // Returns whether successful or not.
-func (p *player) placeunit(u *unittype, v vec) bool {
-	for i, unit := range p.unitsfinished { // check if user can place that unit
+func (p *Player) placeunit(u *UnitType, v Vec) bool {
+	for i, unit := range p.UnitsFinished { // check if user can place that unit
 		if unit == u {
-			if newunit(u, v, p, p.game) == nil {
+			if NewUnit(u, v, p, p.GameIn) == nil {
 				return false
 			}
-			p.unitsfinished = append(p.unitsfinished[:i], p.unitsfinished[i+1:]...)
+			p.UnitsFinished = append(p.UnitsFinished[:i], p.UnitsFinished[i+1:]...)
 			return true
 		}
 	}
 	return false
 }
 
-func makeplayer(name string, game *Game) *player {
-	plr := player{
+// MakePlayer constructs a new player with default values.
+func MakePlayer(name string, game *Game) *Player {
+	plr := Player{
 		name,
-		make([]*unit, 0),
-		make([]*unit, 0),
+		make([]*Unit, 0),
+		make([]*Unit, 0),
 		0,
 		0,
 		0,
 		0,
 		0,
 		0,
-		make([]*unittype, 0),
+		make([]*UnitType, 0),
 		0,
 		0,
-		make([]*unittype, 0),
+		make([]*UnitType, 0),
 		game,
 	}
-	game.playerlist = append(game.playerlist, plr)
+	game.PlayerList = append(game.PlayerList, plr)
 	return &plr
 }

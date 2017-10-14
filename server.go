@@ -18,15 +18,15 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	var plr *player
+	var plr *Player
 	for { // hello world websocket function at the moment
 		_, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		} else if bytes.Equal(p[:12], []byte("registerplr-")) {
-			plr = makeplayer(string(p[12:]), game)
-			fmt.Println("Registered player", plr.name)
+			plr = MakePlayer(string(p[12:]), game)
+			fmt.Println("Registered player", plr.Name)
 		}
 		conn.WriteMessage(websocket.TextMessage, []byte("dummy message"))
 	}

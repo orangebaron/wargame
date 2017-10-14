@@ -1,124 +1,128 @@
 package main
 
-// unittype contains data for a type of unit.
+// UnitType contains data for a type of unit.
 // a unit can be a boat or a tile.
-type unittype struct {
-	name               string
-	foodoutput         uint
-	metaloutput        uint
-	productionoutput   uint
-	managementoutput   uint
-	foodrequired       uint
-	managementrequired uint
-	metalcost          uint
-	productioncost     uint
-	maxhealth          uint
-	speed              uint
-	hitrange           uint
-	damage             uint
+type UnitType struct {
+	Name               string
+	FoodOutput         uint
+	MetalOutput        uint
+	ProductionOutput   uint
+	ManagementOutput   uint
+	FoodRequired       uint
+	ManagementRequired uint
+	MetalCost          uint
+	ProductionCost     uint
+	MaxHealth          uint
+	Speed              uint
+	HitRange           uint
+	Damage             uint
 }
 
-// types is a list of all possible unit types.
-var types = [14]unittype{
-	unittype{"Farm", 75, 0, 0, 0, 5, 1, 1, 20, 3, 0, 0, 0},
-	unittype{"Urban Farm", 200, 0, 0, 0, 10, 3, 5, 50, 1, 0, 0, 0},
-	unittype{"Mineshaft", 0, 1, 0, 0, 30, 7, 3, 15, 3, 0, 0, 0},
-	unittype{"Factory", 0, 0, 1, 0, 40, 10, 10, 60, 1, 0, 0, 0},
-	unittype{"Robotic Factory", 0, 0, 3, 0, 0, 7, 20, 120, 1, 0, 0, 0},
-	unittype{"Small Office", 0, 0, 0, 100, 20, 0, 4, 40, 1, 0, 0, 0},
-	unittype{"Office Tower", 0, 0, 0, 300, 50, 0, 10, 100, 1, 0, 0, 0},
-	unittype{"Wall", 0, 0, 0, 0, 0, 0, 10, 15, 10, 0, 0, 0},
-	unittype{"Turret", 0, 0, 0, 0, 2, 1, 15, 30, 5, 0, 1, 5},
-	unittype{"Missile Station", 0, 0, 0, 0, 5, 2, 20, 40, 5, 0, 20, 10},
-	unittype{"Cruiser", 0, 0, 0, 0, 10, 4, 40, 90, 5, 5, 5, 7},
-	unittype{"Frigate", 0, 0, 0, 0, 7, 3, 20, 50, 4, 7, 2, 4},
-	unittype{"Destroyer", 0, 0, 0, 0, 10, 4, 35, 90, 5, 10, 2, 5},
-	unittype{"Aircraft Carrier", 0, 0, 0, 0, 50, 6, 50, 120, 15, 5, 10, 10},
+// Types is a list of all possible unit types.
+var Types = [14]UnitType{
+	UnitType{"Farm", 75, 0, 0, 0, 5, 1, 1, 20, 3, 0, 0, 0},
+	UnitType{"Urban Farm", 200, 0, 0, 0, 10, 3, 5, 50, 1, 0, 0, 0},
+	UnitType{"Mineshaft", 0, 1, 0, 0, 30, 7, 3, 15, 3, 0, 0, 0},
+	UnitType{"Factory", 0, 0, 1, 0, 40, 10, 10, 60, 1, 0, 0, 0},
+	UnitType{"Robotic Factory", 0, 0, 3, 0, 0, 7, 20, 120, 1, 0, 0, 0},
+	UnitType{"Small Office", 0, 0, 0, 100, 20, 0, 4, 40, 1, 0, 0, 0},
+	UnitType{"Office Tower", 0, 0, 0, 300, 50, 0, 10, 100, 1, 0, 0, 0},
+	UnitType{"Wall", 0, 0, 0, 0, 0, 0, 10, 15, 10, 0, 0, 0},
+	UnitType{"Turret", 0, 0, 0, 0, 2, 1, 15, 30, 5, 0, 1, 5},
+	UnitType{"Missile Station", 0, 0, 0, 0, 5, 2, 20, 40, 5, 0, 20, 10},
+	UnitType{"Cruiser", 0, 0, 0, 0, 10, 4, 40, 90, 5, 5, 5, 7},
+	UnitType{"Frigate", 0, 0, 0, 0, 7, 3, 20, 50, 4, 7, 2, 4},
+	UnitType{"Destroyer", 0, 0, 0, 0, 10, 4, 35, 90, 5, 10, 2, 5},
+	UnitType{"Aircraft Carrier", 0, 0, 0, 0, 50, 6, 50, 120, 15, 5, 10, 10},
 }
 
-// vec represents a 2d vector.
-type vec struct {
-	x int
-	y int
+// Vec represents a 2d Vector.
+type Vec struct {
+	X int
+	Y int
 }
 
-func (v vec) add(v2 vec) vec {
-	return vec{v.x + v2.x, v.y + v2.y}
+func (v Vec) add(v2 Vec) Vec {
+	return Vec{v.X + v2.X, v.Y + v2.Y}
 }
-func (v vec) sub(v2 vec) vec {
-	return vec{v.x - v2.x, v.y - v2.y}
+func (v Vec) sub(v2 Vec) Vec {
+	return Vec{v.X - v2.X, v.Y - v2.Y}
 }
-func (v vec) mult(v2 vec) vec {
-	return vec{v.x * v2.x, v.y * v2.y}
+func (v Vec) mult(v2 Vec) Vec {
+	return Vec{v.X * v2.X, v.Y * v2.Y}
 }
-func (v vec) div(v2 vec) vec {
-	return vec{v.x / v2.x, v.y / v2.y}
-}
-
-// unit represents a unit or tile.
-type unit struct {
-	stats    *unittype
-	health   uint
-	location vec
-	owner    *player
-	enabled  bool
-	game     *Game
+func (v Vec) div(v2 Vec) Vec {
+	return Vec{v.X / v2.X, v.Y / v2.Y}
 }
 
-func (u *unit) move(v vec) bool {
-	if u.game.unitmap[v] == nil && u.enabled {
-		u.location = v
+// Unit represents a unit or tile.
+type Unit struct {
+	Stats    *UnitType
+	Health   uint
+	Location Vec
+	Owner    *Player
+	Enabled  bool
+	GameIn   *Game
+}
+
+func (u *Unit) move(v Vec) bool {
+	if u.GameIn.UnitMap[v] == nil && u.Enabled {
+		u.Location = v
 		return true
 	}
 	return false
 }
 
-// effectuser applies output and requirement effects to the player's values
-func (u *unit) effectuser(positive bool) {
-	p := u.owner
+// EffectUser applies output and requirement effects to the player's values
+func (u *Unit) EffectUser(positive bool) {
+	p := u.Owner
 	if positive {
-		p.foodoutput += u.stats.foodoutput
-		p.metaloutput += u.stats.metaloutput
-		p.productionoutput += u.stats.productionoutput
-		p.managementoutput += u.stats.managementoutput
-		p.foodrequired += u.stats.foodrequired
-		p.managementrequired += u.stats.managementrequired
+		p.FoodOutput += u.Stats.FoodOutput
+		p.MetalOutput += u.Stats.MetalOutput
+		p.ProductionOutput += u.Stats.ProductionOutput
+		p.ManagementOutput += u.Stats.ManagementOutput
+		p.FoodRequired += u.Stats.FoodRequired
+		p.ManagementRequired += u.Stats.ManagementRequired
 	} else {
-		p.foodoutput -= u.stats.foodoutput
-		p.metaloutput -= u.stats.metaloutput
-		p.productionoutput -= u.stats.productionoutput
-		p.managementoutput -= u.stats.managementoutput
-		p.foodrequired -= u.stats.foodrequired
-		p.managementrequired -= u.stats.managementrequired
+		p.FoodOutput -= u.Stats.FoodOutput
+		p.MetalOutput -= u.Stats.MetalOutput
+		p.ProductionOutput -= u.Stats.ProductionOutput
+		p.ManagementOutput -= u.Stats.ManagementOutput
+		p.FoodRequired -= u.Stats.FoodRequired
+		p.ManagementRequired -= u.Stats.ManagementRequired
 	}
 }
-func (u *unit) damage(d uint) bool { //return value: whether unit was killed
-	if u.health <= d {
-		u.health = 0
-		u.owner.unitslost = append(u.owner.unitslost, u) // register with owner that unit is dead
+
+// Damage deals damage to a unit, and deals with killing it if applicable.
+func (u *Unit) Damage(d uint) bool { //return value: whether unit was killed
+	if u.Health <= d {
+		u.Health = 0
+		u.Owner.UnitsLost = append(u.Owner.UnitsLost, u) // register with owner that unit is dead
 		return true
 	}
-	u.health -= d
+	u.Health -= d
 	return false
 }
-func (u *unit) attack(target *unit) bool {
-	if !u.enabled {
+
+// Attack causes unit u to attack target.
+func (u *Unit) Attack(target *Unit) bool {
+	if !u.Enabled {
 		return false
 	}
-	return target.damage(u.stats.damage)
+	return target.Damage(u.Stats.Damage)
 }
 
-// newunit creates and initializes a new unit with the given specifications.
-func newunit(stats *unittype, location vec, owner *player, game *Game) *unit {
-	if game.unitmap[location] != nil {
+// NewUnit creates and initializes a new unit with the given specifications.
+func NewUnit(stats *UnitType, location Vec, owner *Player, game *Game) *Unit {
+	if game.UnitMap[location] != nil {
 		return nil
 	}
 
-	u := unit{stats, stats.maxhealth, location, owner, true, game}
-	game.unitmap[location] = &u
-	owner.ownedunits = append(owner.ownedunits, &u)
+	u := Unit{stats, stats.MaxHealth, location, owner, true, game}
+	game.UnitMap[location] = &u
+	owner.OwnedUnits = append(owner.OwnedUnits, &u)
 
-	u.effectuser(true)
+	u.EffectUser(true)
 
 	return &u
 }
