@@ -1,6 +1,7 @@
 get-dependencies:
 	go get github.com/gorilla/websocket
 build: get-dependencies
-	go build
+	cd server; go build
+	mv server/server wargame
 run: build
 	./wargame

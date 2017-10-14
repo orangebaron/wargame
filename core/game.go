@@ -1,4 +1,4 @@
-package main
+package core
 
 // Game represents a game and includes its data.
 type Game struct {

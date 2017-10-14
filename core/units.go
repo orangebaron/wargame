@@ -1,4 +1,4 @@
-package main
+package core
 
 // UnitType contains data for a type of unit.
 // a unit can be a boat or a tile.

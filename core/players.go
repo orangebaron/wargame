@@ -1,4 +1,4 @@
-package main
+package core
 
 // Player represents a player in the game.
 type Player struct {
