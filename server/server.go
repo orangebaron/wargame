@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gorilla/websocket"
 
@@ -29,6 +31,30 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 		} else if bytes.Equal(p[:12], []byte("registerplr-")) {
 			plr = core.MakePlayer(string(p[12:]), game)
 			fmt.Println("Registered player", plr.Name)
+		} else if bytes.Equal(p[:8], []byte("gettiles-")) {
+			s := string(p[8:])
+			commaLoc := strings.Index(s, ",")
+			xstartstring, s := s[:commaLoc], s[commaLoc+1:]
+			commaLoc = strings.Index(s, ",")
+			xendstring, s := s[:commaLoc], s[commaLoc+1:]
+			commaLoc = strings.Index(s, ",")
+			ystartstring, yendstring := s[:commaLoc], s[commaLoc+1:]
+			xstart, _ := strconv.Atoi(xstartstring)
+			xend, _ := strconv.Atoi(xendstring)
+			ystart, _ := strconv.Atoi(ystartstring)
+			yend, _ := strconv.Atoi(yendstring)
+			for x := xstart; x < xend; x++ {
+				for y := ystart; y < yend; y++ {
+					strToSend := "block-" + strconv.Itoa(x) + "," + strconv.Itoa(y) + ","
+					if game.UnitMap[core.Vec{X: x, Y: y}] != nil {
+						strToSend += game.UnitMap[core.Vec{X: x, Y: y}].Stats.Name
+					} else {
+
+					}
+					conn.WriteMessage(websocket.TextMessage, []byte(strToSend))
+				}
+			}
+
 		}
 		conn.WriteMessage(websocket.TextMessage, []byte("dummy message"))
 	}
