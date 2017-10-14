@@ -28,11 +28,11 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 			return
-		} else if bytes.Equal(p[:12], []byte("registerplr-")) {
+		} else if bytes.Equal(p[:12], []byte("registerplr:")) {
 			plr = core.MakePlayer(string(p[12:]), game)
 			fmt.Println("Registered player", plr.Name)
-		} else if bytes.Equal(p[:8], []byte("gettiles-")) {
-			s := string(p[8:])
+		} else if bytes.Equal(p[:9], []byte("gettiles:")) {
+			s := string(p[9:])
 			commaLoc := strings.Index(s, ",")
 			xstartstring, s := s[:commaLoc], s[commaLoc+1:]
 			commaLoc = strings.Index(s, ",")
@@ -43,20 +43,19 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 			xend, _ := strconv.Atoi(xendstring)
 			ystart, _ := strconv.Atoi(ystartstring)
 			yend, _ := strconv.Atoi(yendstring)
-			for x := xstart; x < xend; x++ {
-				for y := ystart; y < yend; y++ {
-					strToSend := "block-" + strconv.Itoa(x) + "," + strconv.Itoa(y) + ","
+			for x := xstart; x <= xend; x++ {
+				for y := ystart; y <= yend; y++ {
+					strToSend := "block:" + strconv.Itoa(x) + "," + strconv.Itoa(y) + ","
 					if game.UnitMap[core.Vec{X: x, Y: y}] != nil {
 						strToSend += game.UnitMap[core.Vec{X: x, Y: y}].Stats.Name
 					} else {
-
+						strToSend += "water"
 					}
 					conn.WriteMessage(websocket.TextMessage, []byte(strToSend))
+					fmt.Println(strToSend)
 				}
 			}
-
 		}
-		conn.WriteMessage(websocket.TextMessage, []byte("dummy message"))
 	}
 }
 
