@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"bytes"
@@ -14,7 +14,8 @@ import (
 )
 
 var upgrader = websocket.Upgrader{} // don't know if I need this
-var game = core.MakeGame()
+// Game is the game that the server is running.
+var Game = core.MakeGame()
 
 func sockethandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -29,7 +30,7 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		} else if bytes.Equal(p[:12], []byte("registerplr:")) {
-			plr = core.MakePlayer(string(p[12:]), game)
+			plr = core.MakePlayer(string(p[12:]), Game)
 			fmt.Println("Registered player", plr.Name)
 		} else if bytes.Equal(p[:9], []byte("gettiles:")) {
 			s := string(p[9:])
@@ -46,8 +47,8 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 			for x := xstart; x <= xend; x++ {
 				for y := ystart; y <= yend; y++ {
 					strToSend := "block:" + strconv.Itoa(x) + "," + strconv.Itoa(y) + ","
-					if game.UnitMap[core.Vec{X: x, Y: y}] != nil {
-						strToSend += game.UnitMap[core.Vec{X: x, Y: y}].Stats.Name
+					if Game.UnitMap[core.Vec{X: x, Y: y}] != nil {
+						strToSend += Game.UnitMap[core.Vec{X: x, Y: y}].Stats.Name
 					} else {
 						strToSend += "water"
 					}
@@ -59,9 +60,10 @@ func sockethandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	fmt.Println("Server started")
+// RunServer sets up a server at a given port.
+func RunServer(port string) {
+	fmt.Println("Starting server")
 	http.HandleFunc("/socket", sockethandler)
-	http.Handle("/game/", http.StripPrefix("/game/", http.FileServer(http.Dir("/home/sam/Documents/go/wargame/files"))))
-	http.ListenAndServe(":8080", nil)
+	http.Handle("/game/", http.StripPrefix("/game/", http.FileServer(http.Dir("src/webpage"))))
+	http.ListenAndServe(port, nil)
 }
